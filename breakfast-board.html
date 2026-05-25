@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#FBF3E4" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>The Family Breakfast Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+:root {
+  --cream:#FBF3E4; --card:#FFFBF3; --ink:#3A2A1E; --soft:#8A7257;
+  --yolk:#F0A93B; --yolk-deep:#E08A1E; --jam:#C24B6E; --sage:#7C9070; --line:#E7D7BC;
+}
+body {
+  min-height:100vh; font-family:'Hanken Grotesk',sans-serif; color:var(--ink);
+  background:
+    radial-gradient(1100px 520px at 12% -8%, #FCEACB 0%, rgba(252,234,203,0) 60%),
+    radial-gradient(900px 480px at 105% 8%, #F6E0D6 0%, rgba(246,224,214,0) 55%),
+    var(--cream);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap { max-width:1080px; margin:0 auto; padding:30px 20px 64px; }
+.head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.kicker { display:flex; align-items:center; gap:8px; color:var(--yolk-deep); font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; }
+.title { font-family:'Fraunces',serif; font-weight:900; font-size:clamp(34px,6vw,58px);
+  line-height:.95; margin:6px 0 2px; letter-spacing:-.01em; }
+.title em { font-style:italic; color:var(--jam); }
+.sub { color:var(--soft); max-width:48ch; font-size:15px; margin-top:6px; }
+.recipe-btn { display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:var(--ink);
+  color:#FFF7E9; border:none; padding:11px 16px; border-radius:999px; font-family:'Hanken Grotesk';
+  font-weight:700; font-size:14px; box-shadow:0 6px 18px rgba(58,42,30,.22); transition:transform .15s, box-shadow .15s; }
+.recipe-btn:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(58,42,30,.28); }
+
+.switch { display:flex; align-items:center; gap:10px; margin:26px 0 4px; flex-wrap:wrap; }
+.week-name { font-family:'Fraunces',serif; font-weight:600; font-size:clamp(22px,3.4vw,30px); }
+.week-tag { font-weight:800; color:var(--yolk-deep); font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+.arrow { width:42px; height:42px; border-radius:50%; border:1.5px solid var(--line); background:var(--card);
+  display:grid; place-items:center; cursor:pointer; color:var(--ink); transition:all .15s; }
+.arrow:hover { border-color:var(--yolk); background:#fff; transform:translateY(-1px); }
+.badge { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:5px 10px;
+  border-radius:999px; background:var(--sage); color:#fff; }
+.today-link { display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--soft);
+  cursor:pointer; font-weight:700; font-size:13px; text-decoration:underline; text-underline-offset:3px;
+  font-family:'Hanken Grotesk'; }
+.today-link:hover { color:var(--jam); }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:14px; margin-top:22px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px 15px 14px;
+  position:relative; min-height:148px; display:flex; flex-direction:column;
+  box-shadow:0 2px 0 rgba(231,215,188,.6); transition:transform .15s, box-shadow .15s, border-color .15s;
+  opacity:0; transform:translateY(10px); animation:rise .5s ease forwards; }
+@keyframes rise { to { opacity:1; transform:none; } }
+.card:hover { transform:translateY(-3px); box-shadow:0 12px 26px rgba(58,42,30,.12); }
+.card.today { border-color:var(--yolk); box-shadow:0 0 0 3px rgba(240,169,59,.22); }
+.day { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+.dot { width:9px; height:9px; border-radius:50%; flex:none; }
+.day-name { font-family:'Fraunces',serif; font-weight:600; font-size:18px; }
+.now-tag { margin-left:auto; font-size:10px; font-weight:800; letter-spacing:.08em; background:var(--yolk);
+  color:#4A3413; padding:3px 7px; border-radius:6px; text-transform:uppercase; }
+.meal { font-size:15px; line-height:1.32; color:#4A3826; flex:1; cursor:pointer; }
+.rlink { margin-top:11px; align-self:flex-start; background:none; border:none; padding:0; cursor:pointer;
+  font-family:'Hanken Grotesk'; font-weight:700; font-size:12.5px; color:var(--yolk-deep);
+  display:inline-flex; align-items:center; gap:5px; }
+.rlink:hover { color:var(--jam); }
+.edit { position:absolute; top:12px; right:12px; opacity:0; border:none; background:none; cursor:pointer;
+  color:var(--soft); padding:3px; border-radius:6px; transition:opacity .15s, color .15s; font-size:14px; }
+.card:hover .edit { opacity:1; }
+.edit:hover { color:var(--jam); }
+@media (hover:none) { .edit { opacity:.55; } }
+
+.weekend { background:linear-gradient(135deg,#FFF6E5,#FBEAD3); border:1px dashed var(--yolk-deep);
+  border-radius:18px; padding:18px; margin-top:14px; position:relative; display:flex; align-items:flex-start;
+  gap:14px; flex-wrap:wrap; opacity:0; transform:translateY(10px); animation:rise .5s ease .35s forwards; }
+.weekend .ico { width:46px; height:46px; border-radius:14px; background:#fff; border:1px solid var(--line);
+  display:grid; place-items:center; color:var(--yolk-deep); flex:none; font-size:20px; }
+.weekend.today { box-shadow:0 0 0 3px rgba(240,169,59,.3); }
+
+.edit-row { display:flex; flex-direction:column; gap:8px; flex:1; }
+.input { width:100%; font-family:'Hanken Grotesk'; font-size:14px; line-height:1.35; color:var(--ink);
+  border:1.5px solid var(--yolk); border-radius:10px; padding:8px 9px; resize:vertical; min-height:62px;
+  background:#fff; outline:none; }
+.mini { display:flex; gap:7px; }
+.mini button { border:none; cursor:pointer; border-radius:8px; padding:6px 11px; font-weight:700;
+  font-family:'Hanken Grotesk'; font-size:13px; display:inline-flex; align-items:center; gap:5px; }
+.save { background:var(--yolk-deep); color:#fff; }
+.cancel { background:#EFE3CE; color:var(--ink); }
+
+.prep { margin-top:34px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 22px 18px; }
+.prep h3 { font-family:'Fraunces',serif; font-weight:600; font-size:22px; margin:0 0 4px; display:flex; align-items:center; gap:9px; }
+.prep .note { color:var(--soft); font-size:14px; margin:0 0 14px; }
+.task { display:flex; align-items:center; gap:12px; padding:11px 4px; border-bottom:1px dashed var(--line); cursor:pointer; }
+.task:last-child { border-bottom:none; }
+.box { width:24px; height:24px; border-radius:8px; border:2px solid var(--line); flex:none; display:grid;
+  place-items:center; transition:all .15s; background:#fff; color:#fff; font-size:14px; }
+.task.done .box { background:var(--sage); border-color:var(--sage); }
+.task-label { font-size:15px; transition:.15s; }
+.task.done .task-label { color:var(--soft); text-decoration:line-through; }
+
+.foot { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:26px; flex-wrap:wrap; }
+.saved { font-size:13px; color:var(--soft); display:inline-flex; align-items:center; gap:6px; }
+.reset { display:inline-flex; align-items:center; gap:7px; background:none; border:1px solid var(--line);
+  color:var(--soft); padding:9px 14px; border-radius:999px; cursor:pointer; font-weight:700;
+  font-family:'Hanken Grotesk'; font-size:13px; transition:.15s; }
+.reset:hover { border-color:var(--jam); color:var(--jam); }
+
+.modal-bg { position:fixed; inset:0; background:rgba(58,42,30,.45); backdrop-filter:blur(3px);
+  display:none; place-items:center; padding:18px; z-index:50; }
+.modal-bg.open { display:grid; animation:fade .2s ease; }
+@keyframes fade { from { opacity:0; } }
+.modal { background:var(--card); border-radius:22px; max-width:560px; width:100%; max-height:88vh; overflow:auto;
+  padding:26px; box-shadow:0 30px 70px rgba(0,0,0,.3); border:1px solid var(--line); }
+.modal h2 { font-family:'Fraunces',serif; font-weight:900; font-size:clamp(24px,5vw,30px); margin:0 6px 2px 0; line-height:1.05; }
+.modal .lede { color:var(--soft); font-size:14px; margin:0 0 16px; }
+.recipe-text { width:100%; min-height:330px; font-family:'Hanken Grotesk'; font-size:14px; line-height:1.6;
+  white-space:pre-wrap; border:1.5px solid var(--line); border-radius:14px; padding:14px; color:var(--ink);
+  background:#FFFDF7; resize:vertical; outline:none; }
+.recipe-text:focus { border-color:var(--yolk); }
+.modal-x { float:right; border:none; background:#EFE3CE; cursor:pointer; width:36px; height:36px; border-radius:50%;
+  display:grid; place-items:center; color:var(--ink); font-size:15px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:14px; }
+svg { display:block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="kicker">🥐 The Family Breakfast Board</div>
+      <h1 class="title">Mornings, <em>sorted.</em></h1>
+      <p class="sub">A four-week rotation that auto-advances each week. Tap a meal for its recipe, the ✎ to rename it, and a prep box to check it off — everything saves on this device.</p>
+    </div>
+    <button class="recipe-btn" id="recipeBtn">📖 Yogurt muffins 🧁</button>
+  </div>
+  <div id="app"></div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="modal-x" id="modalX">✕</button>
+    <h2 id="modalTitle">Recipe</h2>
+    <p class="lede">Tap into the text to tweak quantities, swap ingredients, or paste in your own version — it's saved for next time.</p>
+    <textarea class="recipe-text" id="recipeText"></textarea>
+    <div class="modal-actions">
+      <button class="mini cancel" id="recipeClose" style="padding:9px 14px;">Close</button>
+      <button class="mini save" id="recipeSave" style="padding:9px 14px;">✓ Save recipe</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= PLAN ================= */
+const DEFAULT_PLAN = { weeks: [
+  { tag:"Week 1", name:"Make-Ahead Classics", days:{
+      Mon:"Egg muffin cups + fresh fruit",
+      Tue:"Overnight oats + berries",
+      Wed:"Greek yogurt parfait + granola",
+      Thu:"Breakfast burrito + orange slices",
+      Fri:"Kodiak choc-chip waffles, almond butter + banana",
+      Weekend:"Cast-iron frittata — cut & reheat through the week" },
+    prep:["Bake a tray of egg muffin cups","Roll & freeze breakfast burritos","Jar up overnight oats","Bake a batch of granola"] },
+  { tag:"Week 2", name:"Mom's Muffin Week", days:{
+      Mon:"🧁 Yogurt muffins + fruit + milk",
+      Tue:"Chia pudding + berries",
+      Wed:"Egg-in-a-basket + orange",
+      Thu:"Breakfast burrito (from the freezer)",
+      Fri:"Protein pancakes (reheated) + banana",
+      Weekend:"French toast — challah or brioche" },
+    prep:["Bake a double batch of yogurt muffins","Mix chia pudding jars","Batch protein pancakes & freeze flat"] },
+  { tag:"Week 3", name:"Around the World", days:{
+      Mon:"Japanese egg rice (tamago kake gohan)",
+      Tue:"Bircher muesli + grated apple",
+      Wed:"Egg & spinach quesadilla",
+      Thu:"🧁 Yogurt muffins + fruit",
+      Fri:"Berry smoothie + buttered toast",
+      Weekend:"Mini quiches — make two for the week" },
+    prep:["Bake yogurt muffins","Soak the Bircher muesli overnight","Pre-portion smoothie freezer bags"] },
+  { tag:"Week 4", name:"Quick & Cozy", days:{
+      Mon:"Cream of wheat + berries + honey",
+      Tue:"PB–banana overnight oats",
+      Wed:"Egg muffin cups + fruit",
+      Thu:"Whole-grain toast, cheese + apple",
+      Fri:"Smoothie bowl + homemade granola",
+      Weekend:"Bacon & tomato on toast / egg-in-a-basket" },
+    prep:["Bake egg muffin cups","Jar overnight oats","Bake granola","Pack smoothie bags"] },
+]};
+
+/* Recipe id per day-slot — stays stable even if you rename the meal. */
+const WEEK_RIDS = [
+  { Mon:"egg-cups", Tue:"overnight-oats", Wed:"yogurt-parfait", Thu:"burrito", Fri:"kodiak-waffles", Weekend:"frittata" },
+  { Mon:"yogurt-muffins", Tue:"chia-pudding", Wed:"egg-basket", Thu:"burrito", Fri:"protein-pancakes", Weekend:"french-toast" },
+  { Mon:"egg-rice", Tue:"bircher", Wed:"egg-quesadilla", Thu:"yogurt-muffins", Fri:"smoothie", Weekend:"mini-quiche" },
+  { Mon:"cream-of-wheat", Tue:"overnight-oats", Wed:"egg-cups", Thu:"toast-cheese", Fri:"smoothie-bowl", Weekend:"bacon-tomato-toast" },
+];
+
+/* ================= RECIPES (all editable & saved) ================= */
+const DEFAULT_RECIPES = {
+"egg-cups":
+`Make-Ahead Egg Muffin Cups   ·   makes 12 · keeps 4–5 days / freezes
+
+• 8 eggs · splash of milk · salt & pepper
+• ~1 cup mix-ins: shredded cheese, diced ham, chopped spinach, peppers
+
+1. Heat oven to 375°F. Grease a 12-cup muffin tin well (or use liners).
+2. Whisk eggs, milk, salt & pepper. Stir in the mix-ins.
+3. Fill cups about 3/4 full. Bake 18–22 min until set and puffed.
+4. Cool, then store in a container in the fridge.
+   Reheat 20–30 sec in the microwave.
+
+Kid tip: let them pick their own fillings — "build-your-own" cups.`,
+
+"overnight-oats":
+`Overnight Oats   ·   1 jar · prep the night before
+
+• 1/2 cup rolled oats · 1/2 cup milk · 1/4 cup yogurt
+• 1 tsp chia seeds · drizzle of honey or maple
+• Toppings: berries, banana, a spoon of nut butter
+
+1. Stir oats, milk, yogurt, chia & honey in a jar.
+2. Lid on; fridge overnight (4 hrs minimum).
+3. In the morning, top with fruit and nut butter.
+
+PB–banana version: stir in 1 Tbsp peanut butter + 1/2 mashed banana before chilling.`,
+
+"yogurt-parfait":
+`Greek Yogurt Parfait   ·   per cup · 2-min assembly
+
+• 3/4 cup plain Greek yogurt
+• 1/3 cup granola (quick recipe below)
+• Handful of berries · drizzle of honey
+
+1. Layer yogurt, fruit, granola. Repeat. Done.
+
+Quick homemade granola (keeps weeks):
+Toss 2 cups oats + 1/2 cup chopped nuts + 1/3 cup oil + 1/3 cup honey + pinch salt.
+Bake at 350°F ~22 min, stirring once. Add dried fruit after baking.`,
+
+"burrito":
+`Make-Ahead Breakfast Burritos   ·   makes 8 · freeze individually
+
+• 10 eggs, scrambled soft
+• 1 lb breakfast sausage, browned (or black beans)
+• 2 cups shredded cheese · sautéed peppers & onion
+• 8 large flour tortillas
+
+1. Combine the filling. Spoon into tortillas; roll tight.
+2. Wrap each in foil or parchment; freeze in a zip bag.
+3. Reheat from frozen: unwrap, microwave 1.5–2 min (or toaster oven).
+
+Kid tip: keep fillings mild and put salsa on the side.`,
+
+"kodiak-waffles":
+`Choc-Chip Waffles, Almond Butter + Banana   ·   fast weekday plate
+
+• Kodiak chocolate-chip waffles (from the freezer)
+• Almond butter · sliced banana
+
+1. Toast the waffles straight from frozen.
+2. Spread with almond butter; add banana slices.
+
+Make-your-own: mix Kodiak batter per the box, batch-cook waffles on the
+weekend, and freeze between sheets of parchment.`,
+
+"frittata":
+`Cast-Iron Frittata   ·   one pan, feeds the week
+
+• 10 eggs · 1/3 cup milk · salt & pepper
+• ~2 cups fillings: cooked potato, spinach, cheese, ham
+
+1. Heat oven to 375°F. Sauté fillings in a 10–12" cast-iron skillet.
+2. Pour in the whisked eggs + milk. Let set 2 min on the stove.
+3. Move to the oven 12–15 min until just set in the center.
+4. Cool and slice into wedges.
+
+Reheat slices in a toaster oven, or tuck into English muffins.`,
+
+"yogurt-muffins":
+`Greek Yogurt Muffins  (a starting point — swap in Mom's exact recipe!)
+
+Dry:
+• 2 cups flour (try half whole-wheat)
+• 1/2 cup sugar  — or 1/3 cup honey in the wet bowl
+• 2 tsp baking powder · 1/2 tsp baking soda · 1/4 tsp salt
+
+Wet:
+• 1 cup plain Greek yogurt
+• 2 eggs
+• 1/3 cup neutral oil or melted butter
+• 1 tsp vanilla
+
+Mix-in (let the kids choose):
+• 1 cup blueberries or chocolate chips
+
+1. Heat oven to 375°F, line a 12-cup muffin tin.
+2. Whisk the dry bowl. Whisk the wet bowl. Combine until *just* mixed.
+3. Fold in the berries/chips. Scoop into cups.
+4. Bake 18–22 min until golden. Cool.
+   Keeps ~3 days, or freeze and reheat 20 sec.`,
+
+"chia-pudding":
+`Chia Pudding   ·   2–3 jars · keeps 3 days
+
+• 1/4 cup chia seeds · 1 cup milk
+• 1 tsp honey or maple · splash of vanilla
+
+1. Whisk everything in a jar. Wait 5 min, then whisk again (stops clumps).
+2. Lid on; fridge overnight.
+3. Top with fruit, yogurt, or granola.
+
+Texture note: if the kids are unsure, blend it smooth for a pudding feel.`,
+
+"egg-basket":
+`Egg-in-a-Basket   ·   per slice · ~5 min
+
+• 1 slice bread · 1 egg · butter
+
+1. Cut a hole in the middle of the bread (a cookie cutter makes it fun).
+2. Butter a pan, lay the bread down, crack the egg into the hole.
+3. Cook ~2 min, flip, 1 min more. Toast the cut-out circle alongside.`,
+
+"protein-pancakes":
+`Protein Pancakes   ·   batch & freeze
+
+• 1 cup oats (blended to flour) · 1 cup yogurt · 2 eggs
+• 1 scoop protein powder · 1 tsp baking powder · 1/2 banana
+
+1. Blend to a batter. Cook silver-dollar pancakes.
+2. Cool; freeze between parchment in a zip bag.
+3. Reheat in the toaster or 30 sec in the microwave.
+
+Serve with fruit or a little syrup.`,
+
+"french-toast":
+`French Toast   ·   per 4 slices
+
+• 4 thick slices challah or brioche
+• 2 eggs · 1/2 cup milk · 1 tsp vanilla · pinch cinnamon
+
+1. Whisk egg, milk, vanilla & cinnamon.
+2. Dip bread both sides; cook in butter ~2 min/side until golden.
+3. Serve with fruit and a little syrup.
+
+Make-ahead: freeze cooked slices and reheat in the toaster.`,
+
+"egg-rice":
+`Tamago Kake Gohan (Japanese Egg Rice)   ·   per bowl · 3 min
+
+• 1 bowl warm cooked rice · 1 very fresh egg
+• Splash of low-sodium soy sauce
+
+1. Make a well in the hot rice; crack in the egg.
+2. Stir briskly so the rice's heat lightly cooks it silky.
+3. Add a little soy sauce; optional sesame or furikake on top.
+
+Note: use the freshest pasteurized eggs for kids.`,
+
+"bircher":
+`Bircher Muesli   ·   2–3 servings · overnight
+
+• 1 cup rolled oats · 1 cup milk · 1/2 cup yogurt
+• 1 grated apple · drizzle honey · handful raisins
+
+1. Stir everything together in a bowl or jar.
+2. Cover; fridge overnight.
+3. Loosen with a splash of milk; top with nuts or berries.`,
+
+"egg-quesadilla":
+`Egg & Spinach Quesadilla   ·   per quesadilla · ~6 min
+
+• 1 low-carb tortilla · 1 egg · handful spinach · shredded cheese
+
+1. Scramble the egg with spinach in a pan.
+2. Lay the tortilla in the pan; cheese + egg on one half; fold over.
+3. Toast both sides until crisp and melty. Cut into wedges.`,
+
+"smoothie":
+`Berry Smoothie + Toast   ·   per smoothie
+
+• 1 cup frozen berries · 1/2 banana
+• 3/4 cup milk · 1/4 cup yogurt · optional protein powder or chia
+
+1. Blend until smooth.
+2. Serve with a slice of buttered toast on the side.
+
+Prep: pre-bag fruit portions in the freezer — just dump & blend.`,
+
+"mini-quiche":
+`Mini Quiches   ·   ~12 · two trays = a week
+
+• 1 sheet pie crust (or go crustless) · 6 eggs · 1/2 cup milk
+• 1.5 cups fillings: cheese, ham, spinach, mushroom
+
+1. Heat oven to 375°F. Press crust rounds into a muffin tin (or grease it for crustless).
+2. Add fillings; pour in the whisked eggs + milk.
+3. Bake 18–22 min until set. Cool; fridge or freeze.
+
+Reheat 30–45 sec. To the kids: "little pies."`,
+
+"cream-of-wheat":
+`Cream of Wheat   ·   per bowl · 4 min
+
+• 3 Tbsp cream of wheat · 1 cup milk (or milk + water)
+• pinch of salt · honey & cinnamon to taste
+
+1. Bring the milk to a gentle simmer.
+2. Whisk in the cream of wheat slowly; cook 2–3 min, stirring.
+3. Top with berries, honey, and a little cinnamon.`,
+
+"toast-cheese":
+`Whole-Grain Toast, Cheese + Fruit   ·   per plate · 3 min
+
+• 1–2 slices whole-grain bread · sliced cheese · an apple
+
+1. Toast the bread; lay on cheese (melt under the broiler 1 min if you like).
+2. Slice an apple alongside.
+
+Savory boost: add sliced tomato or a smear of butter.`,
+
+"smoothie-bowl":
+`Smoothie Bowl + Granola   ·   per bowl · thicker than a smoothie
+
+• 1 cup frozen berries · 1/2 frozen banana
+• 1/4 cup yogurt · just a splash of milk (keep it thick)
+
+1. Blend thick enough to scoop; pour into a bowl.
+2. Top with granola, fresh fruit, and seeds.
+
+Use minimal liquid so it stays spoonable.`,
+
+"bacon-tomato-toast":
+`Bacon & Tomato on Toast   ·   per plate
+
+• Pre-cooked bacon · 1 slice toast · sliced tomato
+
+1. Reheat bacon (made ahead on the weekend) in a pan or microwave.
+2. Toast the bread; top with tomato and bacon. Salt & pepper.
+
+Lighter swap: egg-in-a-basket (see Week 2's recipe).`,
+};
+
+const DAYS = ["Mon","Tue","Wed","Thu","Fri"];
+const DOT = { Mon:"#E08A1E", Tue:"#C24B6E", Wed:"#7C9070", Thu:"#3F7CAC", Fri:"#B5651D", Weekend:"#9A6FB0" };
+
+/* ================= storage (localStorage = real persistence) ================= */
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch(e){ return fb; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); flashSaved(); } catch(e){} };
+
+let plan    = load("bb-plan", DEFAULT_PLAN);
+let checks  = load("bb-checks", {});
+let recipes = Object.assign({}, DEFAULT_RECIPES, load("bb-recipes", {}));
+
+/* one-time migration: pull an old single-muffin recipe into the library */
+(function migrate(){
+  try {
+    const old = localStorage.getItem("bb-recipe");
+    if (old && !localStorage.getItem("bb-recipes")) {
+      recipes["yogurt-muffins"] = JSON.parse(old);
+      localStorage.setItem("bb-recipes", JSON.stringify(recipes));
+    }
+  } catch(e){}
+})();
+
+/* ================= date → rotation ================= */
+function rotationIndex(d){
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const oneJan = new Date(d.getFullYear(),0,1);
+  const days = Math.floor((date - oneJan)/86400000);
+  const week = Math.ceil((days + oneJan.getDay() + 1)/7);
+  return (week - 1) % 4;
+}
+function todayKey(d){ return ["Weekend","Mon","Tue","Wed","Thu","Fri","Weekend"][d.getDay()]; }
+
+const now = new Date();
+const autoWeek = rotationIndex(now);
+const tKey = todayKey(now);
+
+let viewWeek = autoWeek;
+let editing = null;
+let currentRid = null;
+let savedTimer = null;
+
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function flashSaved(){
+  const el = document.getElementById("savedMsg");
+  if(!el) return;
+  el.innerHTML = '<span style="color:#7C9070;">✓</span> Saved';
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(() => { el.textContent = "Changes save automatically to this device"; }, 1400);
+}
+
+/* ================= render ================= */
+function render(){
+  const w = plan.weeks[viewWeek];
+  const weekendToday = (viewWeek === autoWeek && tKey === "Weekend");
+
+  const dayCards = DAYS.map((day,i) => {
+    const isToday = (viewWeek === autoWeek && tKey === day);
+    const inner = editing === day ? editForm(day) :
+      `<div class="meal" data-recipe="${day}">${esc(w.days[day])}</div>
+       <button class="rlink" data-recipe="${day}">🍳 Recipe ›</button>`;
+    return `<div class="card${isToday?" today":""}" style="animation-delay:${i*0.06}s">
+        ${editing===day?"":`<button class="edit" data-edit="${day}" title="Rename meal">✎</button>`}
+        <div class="day">
+          <span class="dot" style="background:${DOT[day]}"></span>
+          <span class="day-name">${day}</span>
+          ${isToday?'<span class="now-tag">Today</span>':""}
+        </div>
+        ${inner}
+      </div>`;
+  }).join("");
+
+  const weekendInner = editing === "Weekend"
+    ? editForm("Weekend")
+    : `<div class="meal" data-recipe="Weekend">${esc(w.days.Weekend)}</div>
+       <button class="rlink" data-recipe="Weekend">🍳 Recipe ›</button>`;
+
+  const prepTasks = w.prep.map((t,i) => {
+    const done = !!checks[`${viewWeek}:${i}`];
+    return `<div class="task${done?" done":""}" data-task="${i}">
+        <span class="box">${done?"✓":""}</span>
+        <span class="task-label">${esc(t)}</span>
+      </div>`;
+  }).join("");
+
+  const weekBadge = viewWeek === autoWeek
+    ? '<span class="badge">This week</span>'
+    : '<button class="today-link" id="backToWeek">☀ Back to this week</button>';
+
+  document.getElementById("app").innerHTML = `
+    <div class="switch">
+      <button class="arrow" id="prevWk" aria-label="Previous week">‹</button>
+      <button class="arrow" id="nextWk" aria-label="Next week">›</button>
+      <div>
+        <div class="week-tag">${w.tag}</div>
+        <div class="week-name">${esc(w.name)}</div>
+      </div>
+      ${weekBadge}
+    </div>
+
+    <div class="grid">${dayCards}</div>
+
+    <div class="weekend${weekendToday?" today":""}">
+      <div class="ico">✦</div>
+      <div style="flex:1;min-width:200px;">
+        <div class="day" style="margin-bottom:4px;">
+          <span class="dot" style="background:${DOT.Weekend}"></span>
+          <span class="day-name">Weekend cook-fresh</span>
+          ${weekendToday?'<span class="now-tag">Today</span>':""}
+        </div>
+        ${weekendInner}
+      </div>
+      ${editing==="Weekend"?"":'<button class="edit" data-edit="Weekend" style="position:static;opacity:1;" title="Rename meal">✎</button>'}
+    </div>
+
+    <div class="prep">
+      <h3>📅 Sunday prep — ${w.tag}</h3>
+      <p class="note">Knock these out once and the weekday mornings basically run themselves.</p>
+      ${prepTasks}
+    </div>
+
+    <div class="foot">
+      <span class="saved" id="savedMsg">Changes save automatically to this device</span>
+      <button class="reset" id="resetBtn">↺ Reset to original plan</button>
+    </div>`;
+
+  wire();
+  if(editing){ const ta = document.getElementById("editArea"); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
+}
+
+function editForm(day){
+  return `<div class="edit-row">
+      <textarea class="input" id="editArea">${esc(plan.weeks[viewWeek].days[day])}</textarea>
+      <div class="mini">
+        <button class="save" data-commit="${day}">✓ Save</button>
+        <button class="cancel" data-canceledit="1">✕ Cancel</button>
+      </div>
+    </div>`;
+}
+
+/* ================= events ================= */
+function wire(){
+  const $ = id => document.getElementById(id);
+  $("prevWk").onclick = () => { editing=null; viewWeek=(viewWeek+3)%4; render(); };
+  $("nextWk").onclick = () => { editing=null; viewWeek=(viewWeek+1)%4; render(); };
+  if($("backToWeek")) $("backToWeek").onclick = () => { editing=null; viewWeek=autoWeek; render(); };
+  $("resetBtn").onclick = resetAll;
+
+  document.querySelectorAll("[data-recipe]").forEach(el => el.onclick = () => openRecipeForDay(el.dataset.recipe));
+  document.querySelectorAll("[data-edit]").forEach(b => b.onclick = (e) => { e.stopPropagation(); editing = b.dataset.edit; render(); });
+  document.querySelectorAll("[data-commit]").forEach(b => b.onclick = () => commitEdit(b.dataset.commit));
+  document.querySelectorAll("[data-canceledit]").forEach(b => b.onclick = () => { editing=null; render(); });
+  document.querySelectorAll("[data-task]").forEach(t => t.onclick = () => toggleTask(+t.dataset.task));
+
+  const ta = $("editArea");
+  if(ta) ta.onkeydown = e => {
+    if((e.metaKey||e.ctrlKey) && e.key==="Enter") commitEdit(editing);
+    if(e.key==="Escape"){ editing=null; render(); }
+  };
+}
+
+function commitEdit(day){
+  const ta = document.getElementById("editArea");
+  if(ta){ plan.weeks[viewWeek].days[day] = ta.value; save("bb-plan", plan); }
+  editing = null; render();
+}
+function toggleTask(i){
+  const key = `${viewWeek}:${i}`;
+  checks[key] = !checks[key];
+  save("bb-checks", checks);
+  render();
+}
+function resetAll(){
+  if(!confirm("Reset the whole rotation back to the original plan? Your edits, recipes, and checked prep tasks will be cleared.")) return;
+  plan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  checks = {};
+  recipes = JSON.parse(JSON.stringify(DEFAULT_RECIPES));
+  save("bb-plan", plan); save("bb-checks", checks); save("bb-recipes", recipes);
+  editing = null; render();
+}
+
+/* ================= recipe modal ================= */
+const modalBg = document.getElementById("modalBg");
+const recipeText = document.getElementById("recipeText");
+const modalTitle = document.getElementById("modalTitle");
+
+function openRecipe(rid, title){
+  currentRid = rid;
+  modalTitle.textContent = title || "Recipe";
+  recipeText.value = recipes[rid] || "No recipe yet — type one here and hit Save.";
+  modalBg.classList.add("open");
+}
+function openRecipeForDay(day){
+  const rid = WEEK_RIDS[viewWeek][day];
+  const title = plan.weeks[viewWeek].days[day];
+  openRecipe(rid, title);
+}
+const closeModal = () => modalBg.classList.remove("open");
+
+document.getElementById("recipeBtn").onclick = () => openRecipe("yogurt-muffins", "🧁 Yogurt Muffins");
+document.getElementById("modalX").onclick = closeModal;
+document.getElementById("recipeClose").onclick = closeModal;
+document.getElementById("recipeSave").onclick = () => { if(currentRid){ recipes[currentRid] = recipeText.value; save("bb-recipes", recipes); } closeModal(); };
+modalBg.onclick = e => { if(e.target === modalBg) closeModal(); };
+document.addEventListener("keydown", e => { if(e.key==="Escape" && modalBg.classList.contains("open")) closeModal(); });
+
+render();
+</script>
+</body>
+</html>
